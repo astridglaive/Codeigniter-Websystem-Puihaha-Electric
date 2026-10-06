@@ -1,0 +1,29 @@
+# Local environment settings
+.env
+
+# CodeIgniter runtime files
+writable/cache/*
+writable/debugbar/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+!writable/cache/index.html
+!writable/debugbar/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/uploads/index.html
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local database dumps that contain demonstration records
+database/electric_company_original.sql
+database/puihaha_electric_company.sql
+
+# Test output
+build/
+phpunit*.xml
+!phpunit.xml.dist
