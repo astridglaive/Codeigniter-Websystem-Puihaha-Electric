@@ -49,8 +49,8 @@ class Database extends Config
         $this->default['sslmode'] = getenv('PGSSLMODE') ?: 'require';
 
         if (preg_match('/^db\.([a-z0-9]+)\.supabase\.co$/i', $this->default['hostname'], $matches)) {
-            $this->default['hostname'] = getenv('PGPOOLER_HOST') ?: 'aws-0-ap-southeast-1.pooler.supabase.com';
-            $this->default['port'] = (int) (getenv('PGPOOLER_PORT') ?: 6543);
+            $this->default['hostname'] = getenv('PGPOOLER_HOST') ?: 'aws-0-ap-northeast-2.pooler.supabase.com';
+            $this->default['port'] = (int) (getenv('PGPOOLER_PORT') ?: 5432);
             if ($this->default['username'] === 'postgres') {
                 $this->default['username'] = 'postgres.' . $matches[1];
             }
