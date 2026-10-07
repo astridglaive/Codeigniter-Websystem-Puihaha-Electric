@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\User;
 
 class Auth extends BaseController
 {
@@ -18,7 +19,7 @@ class Auth extends BaseController
     public function attemptLogin()
     {
         $rules = [
-            'username' => 'required|max_length[100]',
+            'username' => 'required|max_length[255]',
             'password' => 'required|max_length[255]',
         ];
 
@@ -29,25 +30,27 @@ class Auth extends BaseController
 
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
-        $user = (new UserModel())->where('username', $username)->first();
+        $staffUser = (new UserModel())->where('username', $username)->first();
+        $customerUser = (new User())->where('email', $username)->where('is_active', 1)->first();
+        $user = $staffUser ?? $customerUser;
 
         if ($user === null || ! password_verify($password, $user['password'])) {
             return redirect()->back()->withInput()
-                ->with('error', 'Invalid username or password.');
+                ->with('error', 'Invalid email/username or password.');
         }
 
         session()->regenerate(true);
         session()->set([
             'isLoggedIn' => true,
             'userId'     => $user['id'],
-            'username'   => $user['username'],
-            'fullName'   => $user['full_name'],
+            'username'   => $user['username'] ?? $user['email'],
+            'fullName'   => $user['full_name'] ?? trim($user['first_name'] . ' ' . $user['last_name']),
         ]);
 
         $destination = session()->get('redirectAfterLogin') ?: site_url('dashboard');
         session()->remove('redirectAfterLogin');
 
-        return redirect()->to($destination)->with('success', 'Welcome back, ' . $user['full_name'] . '!');
+        return redirect()->to($destination)->with('success', 'Welcome back, ' . ($user['full_name'] ?? trim($user['first_name'] . ' ' . $user['last_name'])) . '!');
     }
 
     public function logout()
