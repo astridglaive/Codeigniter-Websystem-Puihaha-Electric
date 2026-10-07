@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\CustomerAccountModel;
 
 class Register extends BaseController
 {
@@ -34,8 +35,11 @@ class Register extends BaseController
             return redirect()->back()->withInput()->with('validation', $this->validator->getErrors());
         }
 
+        $db = db_connect();
+        $db->transStart();
+
         $model = new User();
-        $model->insert([
+        $userId = $model->insert([
             'first_name' => trim((string) $this->request->getPost('first_name')),
             'last_name' => trim((string) $this->request->getPost('last_name')),
             'email' => trim((string) $this->request->getPost('email')),
@@ -48,7 +52,24 @@ class Register extends BaseController
             'user_type' => 'customer',
             'is_active' => 1,
             'email_verified' => 0,
+        ], true);
+
+        (new CustomerAccountModel())->insert([
+            'account_number' => 'CUS-USER-' . $userId,
+            'customer_name' => trim((string) $this->request->getPost('first_name')) . ' ' . trim((string) $this->request->getPost('last_name')),
+            'address' => trim((string) $this->request->getPost('address')) . ', ' . trim((string) $this->request->getPost('city')) . ', ' . trim((string) $this->request->getPost('state')) . ' ' . trim((string) $this->request->getPost('zip_code')),
+            'phone' => trim((string) $this->request->getPost('phone')),
+            'email' => trim((string) $this->request->getPost('email')),
+            'connection_type' => 'residential',
+            'status' => 'active',
         ]);
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('error', 'Registration could not be saved. Please try again.');
+        }
+
+        $db->transComplete();
 
         return redirect()->to(site_url('register'))->with('success', 'Registration successful! Your customer account was saved to the database.');
     }
